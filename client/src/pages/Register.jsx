@@ -3,14 +3,39 @@ import { Link } from "react-router-dom";
 import "./Register.css";
 import bot from "../assets/bot.jpeg";
 import { useState } from "react";
+import axios from "axios";
 
 const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
 
-  const handleSubmit = (e) => {
+  const [image, setImage] = useState("");
+
+  const [previewImg, setPreviewImg] = useState(null);
+
+  const handleProfilePic = (e) => {
+    const file = e.target.files[0];
+    setImage(file);
+    setPreviewImg(URL.createObjectURL(file));
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const formData = new FormData();
+    formData.append("picture", image);
+    formData.append("pictureName", image.name);
+    console.log("image", image.name);
+    formData.append("email", email);
+    formData.append("username", username);
+    formData.append("password", password);
+    console.log(formData);
+    const data = await axios.post(
+      "http://localhost:3500/api/auth/register",
+      formData
+    );
+    console.log(data);
   };
   return (
     <Container>
@@ -22,7 +47,12 @@ const Register = () => {
           <Form style={{ width: "80%", maxWidth: 500 }} onSubmit={handleSubmit}>
             <h1 className="text-center mb-5">Create account</h1>
             <div className="register-profile-pic__container">
-              <img src={bot} alt="" className="signup-profile-pic" />
+              <img
+                src={previewImg || bot}
+                alt=""
+                className="signup-profile-pic"
+                name="picture"
+              />
               <label htmlFor="image-upload" className="image-upload-label">
                 <i className="fas fa-plus-circle add-picture-icon"></i>
               </label>
@@ -31,7 +61,7 @@ const Register = () => {
                 id="image-upload"
                 hidden
                 accept="image/png, image/jpeg"
-                onChange={validateImage}
+                onChange={handleProfilePic}
               />
             </div>
             <Form.Group className="mb-3">
