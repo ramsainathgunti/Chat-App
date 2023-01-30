@@ -26,6 +26,7 @@ const registerController = async(req, res) => {
 };
 
 const loginController = async(req, res) => {
+    console.log(req.body);
     const { email, password } = req.body;
     try {
         const foundUser = await User.findOne({ email });
@@ -33,8 +34,10 @@ const loginController = async(req, res) => {
         const passMatch = await bcrypt.compare(password, foundUser.password);
 
         if (!passMatch) return res.status(401).json("Invalid credentials");
+        let user = foundUser.toObject();
+        delete user.password;
 
-        res.status(200).json("Login Successful");
+        res.status(200).json(user);
     } catch (err) {
         console.log(err);
     }

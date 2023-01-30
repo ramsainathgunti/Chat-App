@@ -1,11 +1,13 @@
 import { Form, Row, Col, Button, Container } from "react-bootstrap";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./Register.css";
 import bot from "../assets/bot.jpeg";
 import { useState } from "react";
 import axios from "axios";
+import { useUserRegisterMutation } from "../store/stateApi";
 
 const Register = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
@@ -13,6 +15,8 @@ const Register = () => {
   const [image, setImage] = useState("");
 
   const [previewImg, setPreviewImg] = useState(null);
+
+  const [userRegister, { isLoading, error }] = useUserRegisterMutation();
 
   const handleProfilePic = (e) => {
     const file = e.target.files[0];
@@ -31,11 +35,16 @@ const Register = () => {
     formData.append("username", username);
     formData.append("password", password);
     console.log(formData);
-    const data = await axios.post(
-      "http://localhost:3500/api/auth/register",
-      formData
-    );
-    console.log(data);
+    // const data = await axios.post(
+    //   "http://localhost:3500/api/auth/register",
+    //   formData
+    // );
+    userRegister(formData).then(({ data }) => {
+      if (data) {
+        console.log("User Registered", data);
+        navigate("/chat");
+      }
+    });
   };
   return (
     <Container>
@@ -64,7 +73,9 @@ const Register = () => {
                 onChange={handleProfilePic}
               />
             </div>
+
             <Form.Group className="mb-3">
+              {error && <p className="alert alert-danger">{error.data}</p>}
               <Form.Label>Email Address</Form.Label>
               <Form.Control
                 type="email"
